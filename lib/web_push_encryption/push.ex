@@ -33,6 +33,7 @@ defmodule WebPushEncryption.Push do
           subscription :: map,
           auth_token :: binary | nil,
           ttl :: integer
+          options:: list()
         ) ::
           {:ok, any} | {:error, atom}
   def send_web_push(message, subscription, auth_token \\ nil, ttl \\ 0, options \\ [])
@@ -67,7 +68,7 @@ defmodule WebPushEncryption.Push do
     http_client().post(endpoint, payload.ciphertext, headers, options)
   end
 
-  def send_web_push(_message, _subscription, _auth_token, _ttl) do
+  def send_web_push(_message, _subscription, _auth_token, _ttl, _options) do
     raise ArgumentError,
           "send_web_push expects a subscription endpoint with an endpoint parameter"
   end
