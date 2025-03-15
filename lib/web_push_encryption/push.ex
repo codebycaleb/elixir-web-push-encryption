@@ -35,19 +35,19 @@ defmodule WebPushEncryption.Push do
           ttl :: integer
         ) ::
           {:ok, any} | {:error, atom}
-  def send_web_push(message, subscription, auth_token \\ nil, ttl \\ 0)
+  def send_web_push(message, subscription, auth_token \\ nil, ttl \\ 0, options \\ [])
 
-  def send_web_push(_message, _subscription, _auth_token, ttl)
+  def send_web_push(_message, _subscription, _auth_token, ttl, _options)
       when not is_integer(ttl) or ttl < 0 do
     raise ArgumentError,
           "send_web_push expects a non-negative integer ttl"
   end
 
-  def send_web_push(_message, %{endpoint: @gcm_url <> _registration_id}, nil, _ttl) do
+  def send_web_push(_message, %{endpoint: @gcm_url <> _registration_id}, nil, _ttl, _options) do
     raise ArgumentError, "send_web_push requires an auth_token for gcm endpoints"
   end
 
-  def send_web_push(message, %{endpoint: endpoint} = subscription, auth_token, ttl) do
+  def send_web_push(message, %{endpoint: endpoint} = subscription, auth_token, ttl, options) do
     payload = WebPushEncryption.Encrypt.encrypt(message, subscription)
 
     headers =
@@ -63,16 +63,7 @@ defmodule WebPushEncryption.Push do
       |> Map.put("Crypto-Key", "dh=#{ub64(payload.server_public_key)};" <> headers["Crypto-Key"])
 
     {endpoint, headers} = make_request_params(endpoint, headers, auth_token)
-    options = [
-      ssl: [
-        verify: :verify_peer,
-        cacerts: :public_key.cacerts_get(),
-        versions: [:"tlsv1.2"],
-        customize_hostname_check: [
-          match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
-        ]
-      ]
-    ]
+
     http_client().post(endpoint, payload.ciphertext, headers, options)
   end
 
