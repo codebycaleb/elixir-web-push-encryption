@@ -23,6 +23,7 @@ defmodule WebPushEncryption.Push do
     * `ttl` [Optional] is a non-negative integer Time To Live.
        It is the number of seconds that a message may be stored if the user is not immediately available.
        Mozilla Push Service only supports a maximum TTL of 5,184,000 seconds (about one month).
+    * `options` [Optional] is the options you'd like to pass to the HTTPoison request (e.g. ssl options)
 
   ## Return value
 
@@ -32,8 +33,8 @@ defmodule WebPushEncryption.Push do
           message :: binary,
           subscription :: map,
           auth_token :: binary | nil,
-          ttl :: integer
-          options:: list()
+          ttl :: integer,
+          options :: list()
         ) ::
           {:ok, any} | {:error, atom}
   def send_web_push(message, subscription, auth_token \\ nil, ttl \\ 0, options \\ [])
